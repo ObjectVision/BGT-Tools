@@ -14,7 +14,7 @@ container BGT_Tools
 	container Geography: Using = "Units"
 	{
 		unit<fpoint> rdc_meter_base   : DialogData = "ngr_layer", SpatialReference = "EPSG:28992";
-		unit<fpoint> rdc_meter        := range(rdc_meter_base, point(y_min, x_min), point(y_max, x_max));
+		unit<fpoint> rdc_meter        := range(rdc_meter_base, point_yx(y_min, x_min), point_yx(y_max, x_max));
 		
 		parameter<Meter> x_min := 0[Meter];
 		parameter<Meter> x_max := 280000[Meter];
@@ -102,8 +102,9 @@ container BGT_Tools
 			attribute<rdc_meter>                        geometry (poly)      := GML/geometry[org_rel];
 			attribute<string>                           classification_field := GML/classification_field[org_rel];
 			attribute<string>                           plus_field           := GML/plus_field[org_rel];
-			attribute<ClassificationType>               type_rel             := rlookup(classification_field, ClassificationType/label);
-			attribute<uint32>                           code                 := ClassificationType/code[type_rel];
+			// attribute<ClassificationType>               type_rel             := rlookup(classification_field, ClassificationType/label);
+			// attribute<uint8>                            bbg_code             := ClassificationType/bbg_code[type_rel];
+			// attribute<uint32>                           code                 := ClassificationType/code[type_rel];
 		}
 	}
  
@@ -112,7 +113,8 @@ container BGT_Tools
 	, using = "geography;units;Classifications"
 	{
 		attribute<rdc_meter> geometry (poly) := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/geometry',',')+')';
-		attribute<uint32>    code            := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/code',',')+')';
+		// attribute<uint32>    code            := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/code',',')+')';
+		// attribute<uint8>     bbg_code        := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/bbg_code',',')+')';
 		attribute<string>    type_name       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/classification_field',',')+')';
 		attribute<string>    plus_type       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/plus_field',',')+')';
 		attribute<string>    bron_bestand    := ='union_data(.,'+AsList('const('+quote(BGT_names/name)+', Read_GMLs/'+BGT_names/name+'/Actueel)',',')+')';
@@ -124,7 +126,8 @@ container BGT_Tools
 	, using           = "geography;units;Classifications"
 	{
 		attribute<rdc_meter> geometry (poly);
-		attribute<uint32>    code;
+		// attribute<uint32>    code;
+		// attribute<uint8>     bbg_code;
 		attribute<string>    type_name;
 		attribute<string>    plus_type;
 		attribute<string>    bron_bestand;
