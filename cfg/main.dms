@@ -1,5 +1,9 @@
 container BGT_Tools
 {
+	// Download BGT GML files from: https://app.pdok.nl/lv/bgt/download-viewer/
+	// select citygml without plaatsbepalingspunten
+	// extract zip to %SourceDataDir%/BGT/$Date$
+	
 	parameter<string> BGT_Date := '20240124';
 
 	container Units
@@ -115,8 +119,8 @@ container BGT_Tools
 	}
 	
 	unit<uint32> Read_FSS 
-	, StorageName     = "=PropValue(Write_FSS, 'StorageName')"
-	, StorageReadOnly = "true";
+	: StorageName     = "=PropValue(Write_FSS, 'StorageName')"
+	, StorageReadOnly = "true"
 	, using           = "geography;units;Classifications"
 	{
 		attribute<rdc_meter> geometry (poly);
