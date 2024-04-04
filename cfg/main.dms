@@ -1,0 +1,136 @@
+container BGT_Tools
+{
+	parameter<string> BGT_Date := '20240124';
+
+	container Units
+	{
+		unit<Float32> Meter := BaseUnit('m', float32);
+	}
+	
+	container Geography: Using = "Units"
+	{
+		unit<fpoint> rdc_meter_base   : DialogData = "ngr_layer", SpatialReference = "EPSG:28992";
+		unit<fpoint> rdc_meter        := range(rdc_meter_base, point(y_min, x_min), point(y_max, x_max));
+		
+		parameter<Meter> x_min := 0[Meter];
+		parameter<Meter> x_max := 280000[Meter];
+		parameter<Meter> y_min := 300000[Meter];
+		parameter<Meter> y_max := 625000[Meter];
+		#include<ngr_layer.dms> // reference WMS layer
+	}
+
+	unit<uint8> BGT_names : nrofrows = 17
+	{
+		unit<uint8> Elements := range(uint8, 0b, nrAttr * #.[uint8])
+		{
+			attribute<string> Text:
+			[ 
+				 'functioneelgebied'       , '100'   , 'plus_type'                   , 'plus_type'
+				,'gebouwinstallatie'       , '200'   , 'plus_typeGebouwInstallatie'  , 'plus_typeGebouwInstallatie'            //checked
+				,'onbegroeidterreindeel'   , '300'   , 'bgt_fysiekVoorkomen'         , 'plus_fysiekVoorkomen'
+				,'begroeidterreindeel'     , '400'   , 'class'                       , 'plus_fysiekVoorkomen'
+				,'ondersteunendwaterdeel'  , '500'   , 'class'                       , 'plus_type'
+				,'ondersteunendwegdeel'    , '600'   , 'function'                    , 'plus_fysiekVoorkomenOndersteunendWegdeel'
+				,'ongeclassificeerdobject' , '700'   , 'plus_status'                 , 'bgt_status'  //er is niks beters
+				,'overbruggingsdeel'       , '800'   , 'hoortBijTypeOverbrugging'    , 'class'       //checked
+				,'overigbouwwerk'          , '900'   , 'bgt_type'                    , 'plus_type'
+				,'pand'                    , '1000'  , 'plus_status'                 , 'plus_status'
+				,'vegetatieobject'         , '1100'  , 'plus_type'                   , 'plus_type'            //checked
+				,'tunneldeel'              , '1200'  , 'plus_status'                 , 'plus_status'            //er is niks beters
+				,'waterdeel'               , '1300'  , 'class'                       , 'class'
+				,'wegdeel'                 , '1400'  , 'function'                    , 'plus_fysiekVoorkomenWegdeel'
+				,'waterinrichtingselement' , '1500'  , 'plus_type'                   , 'plus_type'            //checked
+				,'weginrichtingselement'   , '1600'  , 'plus_type'                   , 'plus_type'            //checked
+				,'kunstwerkdeel'           , '1700'  , 'bgt_type'                    , 'plus_type'   //checked
+			];
+		}
+		attribute<string> name                  := Elements/Text[value(id(.)* nrAttr + 0b, Elements)];
+		attribute<string> group_code            := Elements/Text[value(id(.)* nrAttr + 1b, Elements)];
+		attribute<string> classification_field  := Elements/Text[value(id(.)* nrAttr + 2b, Elements)];
+		attribute<string> plus_field            := Elements/Text[value(id(.)* nrAttr + 3b, Elements)];
+		parameter<uint8>  nrAttr                := 4b;
+	}
+	
+	container Classifications
+	{
+		unit<uint32> Classes := ='union_unit('+AsList(BGT_names/name+'_type',',')+')'
+		{
+			attribute<string> label      := ='union_data(.,'+AsList(BGT_names/name+'_type/label',',')+')';
+			attribute<string> name       := AsItemName(label);
+			attribute<uint32> code       := ='union_data(.,'+AsList(BGT_names/name+'_type/BrushColor',',')+')';
+			attribute<uint32> BrushColor := ='union_data(.,'+AsList(BGT_names/name+'_type/BrushColor',',')+')', DialogType = "BrushColor";
+			parameter<uint32> PenColor   := rgb(100,100,100), DialogType = "PenColor";
+		}
+		
+		#include<bgt_classes.dms>
+	}	
+	
+
+	container Read_GMLs :=
+		for_each_ne(
+			BGT_names/name
+			, 'Read_GMLs_T('+quote(BGT_names/name)+','+quote(BGT_names/classification_field)+','+quote(BGT_names/plus_field)+')'
+		), using = "geography;units;Classifications";
+	
+	Template Read_GMLs_T 
+	: using = "geography;units;Classifications"
+	{
+		parameter<string> name;
+		parameter<string> classification_field_name;
+		parameter<string> plus_field_name;
+		///
+		parameter<string> file_name := 'bgt_'+name;
+		
+		unit<uint32> GML 
+		: StorageName     = "='%SourceDataDir%/BGT/bgt-'+BGT_Date+'/'+file_name+'.gml'"
+		, StorageType     = "gdal.vect"
+		, StorageReadOnly = "true"
+		, DialogData      = "rdc_meter"
+		{
+			attribute<rdc_meter> geometry (poly);
+			attribute<string>    classification_field := =classification_field_name;
+			attribute<string>    plus_field           := =plus_field_name;
+			attribute<bool>      IsActueel            := !IsDefined(eindRegistratie);
+		}
+		unit<uint32> ClassificationType := =name+'_type';
+		unit<uint32> Actueel := select_with_org_rel(GML/IsActueel)
+		{
+			attribute<rdc_meter>                        geometry (poly)      := GML/geometry[org_rel];
+			attribute<string>                           classification_field := GML/classification_field[org_rel];
+			attribute<string>                           plus_field           := GML/plus_field[org_rel];
+			attribute<ClassificationType>               type_rel             := rlookup(classification_field, ClassificationType/label);
+			attribute<uint32>                           code                 := ClassificationType/code[type_rel];
+		}
+	}
+ 
+	unit<uint32> Write_FSS := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
+	, StorageName = "='%SourceDataDir%/BGT/'+bgt_date+'.fss'"
+	, using = "geography;units;Classifications"
+	{
+		attribute<rdc_meter> geometry (poly) := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/geometry',',')+')';
+		attribute<uint32>    code            := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/code',',')+')';
+		attribute<string>    type_name       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/classification_field',',')+')';
+		attribute<string>    plus_type       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/plus_field',',')+')';
+		attribute<string>    bron_bestand    := ='union_data(.,'+AsList('const('+quote(BGT_names/name)+', Read_GMLs/'+BGT_names/name+'/Actueel)',',')+')';
+	}
+	
+	unit<uint32> Read_FSS 
+	, StorageName     = "=PropValue(Write_FSS, 'StorageName')"
+	, StorageReadOnly = "true";
+	, using           = "geography;units;Classifications"
+	{
+		attribute<rdc_meter> geometry (poly);
+		attribute<uint32>    code;
+		attribute<string>    type_name;
+		attribute<string>    plus_type;
+		attribute<string>    bron_bestand;
+	}
+	
+	container ConfigSettings
+	{
+		container Overridable
+		{
+			parameter<String> RSLDataDir  := '%SourceDataDir%/RSL';
+		}
+	}
+}

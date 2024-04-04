@@ -1,0 +1,319 @@
+unit<uint32> functioneelgebied_type: nrofrows = 24
+{
+	attribute<string> label :[
+								'waardeOnbekend','recreatie: volkstuin','recreatie: sportterrein','bushalte','kering','bedrijvigheid','benzinestation','bewoning','carpoolplaats','functioneel beheer'
+								,'functioneel beheer: hondenuitlaatplaats','infrastructuur verkeer en vervoer','infrastructuur waterstaatswerken','landbouw','maatschappelijke en/of publieksvoorziening'
+								,'natuur en landschap','recreatie','recreatie: bungalowpark','recreatie: camping','recreatie: park','recreatie: speeltuin','verzorgingsplaats','waterbergingsgebied','begraafplaats'
+							];
+	attribute<uint32> code : [
+								100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123
+							];
+	
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(235,235,235),rgb(155,215,155),rgb(155,215,155),rgb(200,200,200),rgb(200,200,200),rgb(200,200,200),rgb(200,200,200),rgb(200,200,200),rgb(200,200,200),rgb(200,200,200)
+		,rgb(155,215,155),rgb(200,200,200),rgb(200,200,200),rgb(155,215,155),rgb(200,200,200)
+		,rgb(155,215,155),rgb(155,215,155),rgb(155,215,155),rgb(155,215,155),rgb(155,215,155),rgb(155,215,155),rgb(200,200,200),rgb(200,200,200),rgb(155,215,155)
+	];
+}
+
+unit<uint32> gebouwinstallatie_type: nrofrows = 4
+{
+	attribute<string> label: DialogType = "LabelText",
+	[ // obv plus_typeGebouwInstallatie
+		'waardeOnbekend','bordes','luifel','toegangstrap'
+	];
+	attribute<uint32> code:
+	[
+		200,201,202,203
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(235,235,235),rgb(204,0,0),rgb(204,0,0),rgb(255,153,153)
+	];
+}
+
+unit<uint32> onbegroeidterreindeel_type: nrofrows = 7
+{
+	attribute<string> label: DialogType = "LabelText",
+	[ //bgt_fysieekvoorkomen
+		'erf','gesloten verharding','half verhard','onverhard','open verharding',
+		'transitie','zand'
+	];
+	attribute<uint32> code:
+	[
+		 300,301,302,303,304
+		,305,306
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(220,245,160),rgb(235,225,225),rgb(250,240,240),rgb(255,255,100),rgb(235,235,200)
+		,rgb(242,242,242),rgb(255,255,153)
+	];
+}
+
+unit<uint32> begroeidterreindeel_type: nrofrows = 17
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		 'boomteelt','bouwland','fruitteelt','gemengd bos','grasland agrarisch'
+		,'grasland overig','groenvoorziening','heide','houtwal','kwelder'
+		,'loofbos','moeras','naaldbos','rietland','struiken'
+		,'transitie','duin'
+	];
+
+	attribute<uint32> code:
+	[
+		400,401,402,403,404,
+		405,406,407,408,409,
+		410,411,412,413,414,
+		415,416
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(195,219,182) //boomteelt
+		,rgb(254,254,254) //bouwland 
+		,rgb(254,254,254) //fruitteelt
+		,rgb(195,219,182) //gemengd bos
+		,rgb(254,254,254) //grasland agr
+		,rgb(225,237,219) //grasland overg
+		,rgb(225,237,219) // groenvo
+		,rgb(227,220,231) //heide
+		,rgb(225,237,219) //houtwal
+		,rgb(253,246,187) //kwelder
+		,rgb(195,219,182) //loofbos
+		,rgb(253,246,187) // moeras
+		,rgb(195,219,182) //naaldbos
+		,rgb(253,246,187) //rietland
+		,rgb(225,237,219) //struiken
+		,rgb(235,235,235) //trans
+		,rgb(253,246,187) //duin
+	];
+}
+
+unit<uint32> ondersteunendwaterdeel_type: nrofrows = 3
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'oever, slootkant','slik','transitie'
+	];
+
+	attribute<uint32> code:
+	[
+		500,501,502
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(115,233,255),rgb(115,233,255),rgb(235,235,235)
+	];
+}
+
+unit<uint32> ondersteunendwegdeel_type: nrofrows = 3
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'berm','verkeerseiland','transitie'
+	];
+	
+	attribute<uint32> code:
+	[
+		600,601,602
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(153,255,153),rgb(255,153,153),rgb(235,235,235)
+	];
+}
+
+unit<uint32> ongeclassificeerdobject_type: nrofrows = 1
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'geenWaarde'
+	];
+	
+	attribute<uint32> code:
+	[
+		700
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(235,235,235)
+	];
+}
+
+unit<uint32> overbruggingsdeel_type : nrofrows = 6
+{
+	attribute<string> label: DialogType = "LabelText",
+	[ //obv hoortBijTypeOverbrugging
+		 'waardeOnbekend','brug','viaduct','ecoduct', 'fly-over', 'aquaduct'
+	];
+	
+	attribute<uint32> code:
+	[
+		800,801,802,803,804,805
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(190,232,255),rgb(204,0,0),rgb(242,242,242),rgb(242,242,242),rgb(242,242,242),rgb(242,242,242)
+	];
+}
+
+unit<uint32> overigbouwwerk_type: nrofrows = 13
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		 'waardeOnbekend','bassin','lage trafo','schuur','overkapping'
+		,'open loods','voedersilo','bezinkbak','windturbine','opslagtank'
+		,'bunker','niet-bgt','transitie'
+	];
+	attribute<uint32> code:
+	[
+		900,901,902,903,904,
+		905,906,907,908,909,
+		910,911,912
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(255,255,255),rgb(190,232,255),rgb(204,0,0),rgb(242,242,242),rgb(242,242,242)
+		,rgb(255,255,255),rgb(190,232,255),rgb(242,242,242),rgb(242,242,242),rgb(242,242,242)
+		,rgb(242,242,242),rgb(242,242,242),rgb(242,242,242)
+	];
+}
+
+unit<uint32> pand_type: nrofrows = 4
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'woongebied', 'detailhandel en horeca', 'sociaal-culturele voorzieningen', 'bedrijfsterreinen'
+	];
+	attribute<uint32> code:
+	[
+		1001, 1002, 1003, 1004 
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(254,60,0), rgb(254,190,0), rgb(254,132,25), rgb(169,169,169)
+	];
+}
+
+unit<uint32> vegetatieobject_type: nrofrows = 1
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'haag'
+	];
+	attribute<uint32> code:
+	[
+		1100
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(155,215,155)
+	];
+}
+
+unit<uint32> tunneldeel_type: nrofrows = 1
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'geenWaarde'
+	];
+	attribute<uint32> code:
+	[
+		1200
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(235,235,235)
+	];
+}
+
+unit<uint32> waterdeel_type: nrofrows = 5
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'waterloop','watervlakte','zee','greppel, droge sloot','transitie'
+	];
+	attribute<uint32> code:
+	[
+		1300,1301,1302,1303,1304
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(115,233,255),rgb(190,232,255),rgb(153,204,255),rgb(153,204,255),rgb(235,235,235)
+	];
+}
+
+unit<uint32> wegdeel_type: nrofrows = 18
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		 'OV-baan','fietspad','inrit','parkeervlak','rijbaan lokale weg'
+		,'rijbaan regionale weg','transitie','voetgangersgebied','voetpad','voetpad op trap'
+		,'woonerf','spoorbaan','rijbaan autoweg','overweg','rijbaan autosnelweg'
+		,'baan voor vliegverkeer','ruiterpad','brug_viaduct'
+	];
+	attribute<uint32> code:
+	[
+		1400,1401,1402,1403,1404,
+		1405,1406,1407,1408,1409,
+		1410,1411,1412,1413,1414,
+		1415,1416,1450
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(204,204,204),rgb(255,198,113),rgb(220,200,180),rgb(220,200,180),rgb(200,180,160)
+		,rgb(180,160,140),rgb(255,175,  0),rgb(235,225,215),rgb(235,225,215),rgb(235,225,215)
+		,rgb(240,240,240),rgb(  0,  0,  0),rgb(255,  0,  0),rgb(240,240,240),rgb(255,  0,  0)
+		,rgb(240,240,240),rgb(240,240,240),rgb(100,100,100)
+	];
+}
+
+unit<uint32> waterinrichtingselement_type: nrofrows = 1
+{
+	attribute<string> label: DialogType = "LabelText",
+	[
+		'geenWaarde'
+	];
+	attribute<uint32> code:
+	[
+		1500
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(235,235,235)
+	];
+}
+
+unit<uint32> weginrichtingselement_type: nrofrows = 10
+{
+	attribute<string> label: DialogType = "LabelText",
+	[ //obv plus_type
+		'balustrade','boomspiegel','geleideconstructie','lijnafwatering','molgoot','rooster','verblindingswering','waardeOnbekend','wegmarkering','wildrooster'
+	];
+	attribute<uint32> code:
+	[
+		1600,1601,1602,1603,1604,1605,1606,1607,1608,1609
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		rgb(215,235,215),rgb(235,235,235),rgb(235,235,235),rgb(235,235,235)
+	];
+}
+
+unit<uint32> kunstwerkdeel_type: nrofrows = 9
+{
+	attribute<string> label: DialogType = "LabelText",
+	[ //obv bgt_type
+		'gemaal','hoogspanningsmast','niet-bgt','perron','sluis','steiger','strekdam','stuw','transitie'
+	];
+	attribute<uint32> code:
+	[
+		1700,1701,1702,1703,1704,1705,1706,1707,1708
+	];
+	attribute<uint32> BrushColor: DialogType = "BrushColor",
+	[
+		 rgb(255,255,255), rgb(128,  0,  0),rgb(204,  0,  0),rgb(  0,  0,  0),rgb(128,  0,  0),rgb(242,242,242),rgb(242,242,242),rgb(242,242,242),rgb(242,242,242)
+	];
+}
