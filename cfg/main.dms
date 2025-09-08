@@ -4,7 +4,10 @@ container BGT_Tools
 	// select citygml without plaatsbepalingspunten
 	// extract zip to %SourceDataDir%/BGT/$Date$
 	
-	parameter<string> BGT_Date := '20240124';
+	parameter<string> BGT_Date     := '20250305';
+	parameter<string> BGT_gml_path := 'D:/SourceData/BGT/'+BGT_Date; 
+	parameter<string> Export_path  := '%SourceDataDir%/RSOpen/Grondgebruik/BGT';
+
 	parameter<uint32> srsDimensionDefaultValue := 2;
 	container Units
 	{
@@ -163,7 +166,7 @@ container BGT_Tools
 			parameter<string> FileName;
 			///
 			parameter<string> XmlData  
-			: StorageName     = "='%SourceDataDir%/BGT/bgt-'+BGT_Date+'/bgt_'+FileName+'.gml'"
+			: StorageName     = "='%SourceDataDir%/RSOpen/Grondgebruik/BGT/'+BGT_Date+'/bgt_'+FileName+'.gml'"   //C:\SourceData\RSOpen\Grondgebruik\BGT\20250305
 			, StorageType     = "str";
 
 			container ParsedXML  := parse_xml(XmlData, GML_schema);
@@ -194,7 +197,7 @@ container BGT_Tools
 		parameter<string> GDAL_Configuration_Options := "GML_FACE_HOLE_NEGATIVE=YES"; 
 		
 		unit<uint32> GML 
-		: StorageName     = "='%SourceDataDir%/BGT/bgt-'+BGT_Date+'/'+file_name+'.gml'"
+		: StorageName     = "=BGT_gml_path+'/'+file_name+'.gml'"
 		, StorageType     = "gdal.vect"
 		, StorageReadOnly = "true"
 		, DialogData      = "rdc_meter"
@@ -208,16 +211,20 @@ container BGT_Tools
 		unit<uint32> Actueel := select_with_org_rel(GML/IsActueel)
 		{
 			attribute<rdc_meter>                        geometry (poly)      := GML/geometry[org_rel];
+			attribute<rdc_meter>                        geometry_simpl (poly) := bg_simplify_multi_polygon(geometry, 1.0);
+
 			attribute<string>                           classification_field := GML/classification_field[org_rel];
 			attribute<string>                           plus_field           := GML/plus_field[org_rel];
 		}
 	}
  
 	unit<uint32> Write_FSS := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
-	, StorageName = "='%SourceDataDir%/BGT/'+bgt_date+'.fss'"
+	, StorageName = "='%SourceDataDir%/RSOpen/Grondgebruik/BGT/'+bgt_date+'.fss'"
+	// unit<uint32> Write_MMD := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
+	// , StorageName = "=Export_path+'/'+bgt_date+'.mmd'"
 	, using = "geography;units;Classifications"
 	{
-		attribute<rdc_meter> geometry (poly) := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/geometry',',')+')';
+		attribute<rdc_meter> geometry (poly) := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/geometry_simpl',',')+')';
 		attribute<string>    type_name       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/classification_field',',')+')';
 		attribute<string>    plus_type       := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/plus_field',',')+')';
 		attribute<string>    bron_bestand    := ='union_data(.,'+AsList('const('+quote(BGT_names/name)+', Read_GMLs/'+BGT_names/name+'/Actueel)',',')+')';
@@ -225,6 +232,8 @@ container BGT_Tools
 	
 	unit<uint32> Read_FSS 
 	: StorageName     = "=PropValue(Write_FSS, 'StorageName')"
+	// unit<uint32> Read_MMD 
+	// : StorageName     = "=PropValue(Write_MMD, 'StorageName')"
 	, StorageReadOnly = "true"
 	, using           = "geography;units;Classifications"
 	{
@@ -424,6 +433,60 @@ container BGT_Tools
 		container Overridable
 		{
 			parameter<String> RSLDataDir  := '%SourceDataDir%/RSL';
+		}
+	}
+	
+	container ExportSettings
+	{
+		container GitImpl
+		{
+			parameter<string> PD               := expand(., '%projDir%');
+			parameter<string> DOS_PD           := replace(PD, '/', '\\');
+
+			parameter<string> SwitchDriveCmd   := substr(DOS_PD, 0, 2);
+			parameter<string> CdCmd            := 'cd '+DOS_PD;
+			parameter<string> DescrCmd         := 'git describe --all > git.txt';
+			parameter<string> StatusCmd        := 'git status >> git.txt';
+			parameter<string> HashCmd          := 'git rev-parse HEAD >> git.txt';
+			parameter<string> Failure          := 'Failure: probably no git repo';
+			parameter<string> RevisionInfoCmds := SwitchDriveCmd + ' && ' + CdCmd + ' && ' + DescrCmd + ' && ' + StatusCmd + ' && ' + HashCmd + ' || ' + Failure;
+			parameter<uint32> WriterCode       := exec_ec(Expand(., '%env:ComSpec%'), '/c ' + RevisionInfoCmds, PD);
+		}
+		container MetaInfo
+		{
+			parameter<string> FileName : ='%storageBaseName%.xml';
+			parameter<string> FileType : ='xml'; // default is 'ini' but ini files cannot be used well to store multi-line properties such as error messages of inproperly configured properties
+			
+			container Contents
+			{
+				container Software
+				{
+					parameter<string> GeoDMSVersion := string(GeoDmsMajorVersionNumber()) + '.' +  string(GeoDmsMinorVersionNumber())  +'.'  +  string(GeoDmsPatchNumber());
+				}
+				
+				container Config
+				{
+					parameter<string> FullName := '=PropValue(this, '+Quote('FullName')+')';
+					parameter<string> Expr     := '=PropValue(this, '+Quote('Expr'    )+')';
+					parameter<string> RunFile  := expand(.,'%configDir%')+'.dms';
+				}
+				
+				container Environment
+				{
+					parameter<string> Processor    := expand(., '%env:PROCESSOR_IDENTIFIER%');
+					parameter<string> User         := expand(., '%env:USERNAME%');
+					parameter<string> ComputerName := expand(., '%env:COMPUTERNAME%');
+				}
+				
+				container Git
+				{
+					parameter<string> RevisionInfo : Storagename = "=(GitImpl/WriterCode==0)?'%projDir%/git.txt':'Error '+String(GitImpl/WriterCode)+' while producing %projDir%/git.txt'", StorageType = "str";
+				}
+				container Parameters
+				{
+					parameter<string> BGT_Date                                      := /BGT_Date;
+				}
+			}
 		}
 	}
 }
