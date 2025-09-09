@@ -8,16 +8,16 @@ container BGT_Tools
 	parameter<string> BGT_gml_path := 'D:/SourceData/BGT/'+BGT_Date; 
 	parameter<string> Export_path  := '%SourceDataDir%/RSOpen/Grondgebruik/BGT';
 
-	parameter<uint32> srsDimensionDefaultValue := 2;
+	// parameter<uint32> srsDimensionDefaultValue := 2;
 	container Units
 	{
-		unit<Float32> Meter := BaseUnit('m', float32);
+		unit<Float64> Meter := BaseUnit('m', float64);
 	}
 	
 	container Geography: Using = "Units"
 	{
-		unit<fpoint> rdc_meter_base   : DialogData = "ngr_layer", SpatialReference = "EPSG:28992";
-		unit<fpoint> rdc_meter        := range(rdc_meter_base, point_yx(y_min, x_min), point_yx(y_max, x_max));
+		unit<dpoint> rdc_meter_base   : DialogData = "ngr_layer", SpatialReference = "EPSG:28992";
+		unit<dpoint> rdc_meter        := range(rdc_meter_base, point_yx(y_min, x_min), point_yx(y_max, x_max));
 		unit<ipoint> rdc_mm           := gridset(rdc_meter, point(0.001, 0.001), point(0.0,0.0), ipoint);
 		
 		parameter<Meter> x_min := 0[Meter];
@@ -27,7 +27,7 @@ container BGT_Tools
 		#include<ngr_layer.dms> // reference WMS layer
 	}
 
-	unit<uint8> BGT_names : nrofrows = 17
+	unit<uint8> BGT_names : nrofrows = 17 //17
 	{
 		unit<uint8> Elements := range(uint8, 0b, nrAttr * #.[uint8])
 		{
@@ -73,7 +73,7 @@ container BGT_Tools
 		#include<bgt_classes.dms>
 	}	
 	
-	container GML_schema
+/* 	container GML_schema
 	{
 		unit<uint32> cityObjectMember
 		{
@@ -116,7 +116,7 @@ container BGT_Tools
 			}
 		}
 	}
-	
+ */	
     // <cityObjectMember>
         // <TunnelPart xmlns="http://www.opengis.net/citygml/tunnel/2.0" gml:id="b706f11e5-63cf-5185-c0cf-3cb80c9c0a8e">
                         // <creationDate xmlns="http://www.opengis.net/citygml/2.0">2016-10-05</creationDate>
@@ -155,7 +155,7 @@ container BGT_Tools
         // </BuildingPart>
     // </cityObjectMember>	
 	
-	container Verwerk_GML 
+/* 	container Verwerk_GML 
 	: using = "geography;units;Classifications"
 	{
 		container Tunneldeel := PrepXML_Data_T('Tunneldeel');
@@ -175,10 +175,11 @@ container BGT_Tools
 			unit<uint32> Polygons := ParsedXML/cityObjectMember
 			{
 				attribute<rdc_mm> geometry_mm (polygon)  := geoBuilder/result;
+				
 			}
 		}
 	}
-
+ */
 	container Read_GMLs :=
 		for_each_ne(
 			BGT_names/name
@@ -211,7 +212,7 @@ container BGT_Tools
 		unit<uint32> Actueel := select_with_org_rel(GML/IsActueel)
 		{
 			attribute<rdc_meter>                        geometry (poly)      := GML/geometry[org_rel];
-			attribute<rdc_meter>                        geometry_simpl (poly) := bg_simplify_multi_polygon(geometry, 1.0);
+			attribute<rdc_meter>                        geometry_simpl (poly) := geos_simplify_multi_polygon(geometry, 1.0);
 
 			attribute<string>                           classification_field := GML/classification_field[org_rel];
 			attribute<string>                           plus_field           := GML/plus_field[org_rel];
@@ -246,24 +247,24 @@ container BGT_Tools
 	container Templates 
 	: using = "units;geography"
 	{
-		Template union 
+/* 		Template union 
 		{
 			// begin case parameters
 			unit<uint32>      child;
 			unit<uint32>      parent;
-			attribute<rdc_mm> geometry   (child, poly);
+			attribute<rdc_meter> geometry   (child, poly);
 			attribute<parent> parent_rel (child);
 			// end case parameters
 
-			attribute<rdc_mm> result (poly, parent) := partitioned_union_polygon(geometry, parent_rel);
+			attribute<rdc_meter> result (poly, parent) := geos_union_polygon(geometry, parent_rel);
 		}
-	
-		Template one2one_union
+ */	
+/* 		Template one2one_union
 		{
 			// begin case parameters
 			unit<uint32>      child;
 			unit<uint32>      parent;
-			attribute<rdc_mm> geometry   (child, poly);
+			attribute<rdc_meter> geometry   (child, poly);
 			attribute<parent> parent_rel (child);
 			// end case parameters
 
@@ -271,16 +272,16 @@ container BGT_Tools
 			{
 				parameter<bool> Check := (#child == #parent) && all(parent_rel == ID(child)[parent]);
 			}
-			attribute<rdc_mm> result (poly, parent) := union_data(parent, geometry), IntegrityCheck = "impl/Check";
+			attribute<rdc_meter> result (poly, parent) := union_data(parent, geometry), IntegrityCheck = "impl/Check";
 		}
-		
-		Template optimized_union
+ */		
+/* 		Template optimized_union
 		{
 			// begin case parameters
 			unit<uint32>      child;
 			unit<uint32>      parent;
-			attribute<rdc_mm> geometry   (child, poly);
-			attribute<parent> parent_rel (child);
+			attribute<rdc_meter> geometry   (child, poly);
+			attribute<parent>    parent_rel (child);
 			// end case parameters
 
 			container impl
@@ -290,15 +291,15 @@ container BGT_Tools
 
 				unit<uint32> nonTrivialChild := select_with_org_rel((count != 1)[union_data(childCopy, parent_rel)])
 				{
-					attribute<child>  child_rel            := value(org_rel, child);
-					attribute<rdc_mm> union (poly, parent) := partitioned_union_polygon(geometry[child_rel], parent_rel[child_rel]);
+					attribute<child>     child_rel            := value(org_rel, child);
+					attribute<rdc_meter> union (poly, parent) := geos_union_polygon(geometry[child_rel], parent_rel[child_rel]);
 				}
 			}
-			attribute<rdc_mm> result (poly,parent) := impl/count <= 1 ? geometry[invert(parent_rel)] : impl/nonTrivialChild/union;
-			attribute<Int32>  area   (parent)      := area(result, Int32); // DEBUG
+			attribute<rdc_meter> result (poly,parent) := impl/count <= 1 ? geometry[invert(parent_rel)] : impl/nonTrivialChild/union;
+			// attribute<Int32>     area   (parent)      := area(result, Int32); // DEBUG
 		}
-		
-		Template posListProcessor 
+ */		
+/* 		Template posListProcessor 
 		{
 			// begin case parameters
 			unit<uint32> posList;
@@ -333,17 +334,17 @@ container BGT_Tools
 					attribute<rdc_mm>      p_mm := point_yx(Round(y * 1000.0), Round(x * 1000.0), rdc_mm);
 					attribute<posListUnit> s    := SequenceNr;
 					attribute<uint32>      fo   := ordinal / posListUnit/nrCoordPerPoint[s]; // forward winding
-					// attribute<uint32>      ro   := pcount(s)[s] - fo - 1; // reverse winding*/
-					attribute<uint32>      pcount_s  (posListUnit) := pcount(s); // reverse winding*/
-					attribute<uint32>      ro   := pcount_s[s] - fo - 1; // reverse winding*/
+					// attribute<uint32>      ro   := pcount(s)[s] - fo - 1; // reverse winding
+					attribute<uint32>      pcount_s  (posListUnit) := pcount(s); // reverse winding
+					attribute<uint32>      ro   := pcount_s[s] - fo - 1; // reverse winding
 				}
 
 				attribute<rdc_mm> geometry_mm (poly) := union_data(posList, points2sequence_pso(p/p_mm, p/s, isExterior ? p/ro : p/fo));
 			}
 			attribute<rdc_mm> result (posList, poly) := impl/geometry_mm[rdc_mm];
 		}
-		
-		Template LinearRing
+ */		
+/* 		Template LinearRing
 		{
 			// begin case parameters
 			unit<uint32>    parsedXMLsrc;
@@ -358,14 +359,14 @@ container BGT_Tools
 			}
 			attribute<rdc_mm> geometry_mm (poly,parsedXMLsrc) := impl/union/result;
 		}
-
-		Template Polygon
+ */
+/* 		Template Polygon
 		{
 			// begin case parameters
 			unit<uint32>        Exterior;
-			attribute<rdc_mm>   ExtGeometry (Exterior, poly);
+			attribute<rdc_meter>   ExtGeometry (Exterior, poly);
 			unit<uint32>        Interior;
-			attribute<rdc_mm>   IntGeometry (Interior, poly);
+			attribute<rdc_meter>   IntGeometry (Interior, poly);
 			attribute<Exterior> Parent_rel  (Interior);
 			// end case parameters
 
@@ -381,20 +382,20 @@ container BGT_Tools
 
 				unit<uint32> nonTrivialExterior := select_with_org_rel(ExtCopy/count2 > 0)
 				{
-					attribute<Exterior> Exterior_rel := value(org_rel, Exterior);
-					attribute<rdc_mm>   diff (poly)  := ExtGeometry[Exterior_rel] - IntUnion/result[Exterior_rel];
+					attribute<Exterior>    Exterior_rel := value(org_rel, Exterior);
+					attribute<rdc_meter>   diff (poly)  := geos_difference(ExtGeometry[Exterior_rel],IntUnion/result[Exterior_rel]);
 				}
 
-				attribute<rdc_mm> result (poly,Exterior) := impl/nonTrivialExterior/diff[invert(impl/nonTrivialExterior/Exterior_rel)];
+				attribute<rdc_meter> result (poly,Exterior) := impl/nonTrivialExterior/diff[invert(impl/nonTrivialExterior/Exterior_rel)];
 			}
 			attribute<rdc_mm> result (poly,Exterior) :=
 				impl/count == 0
 					? ExtGeometry 
 					: impl/result;
-			attribute<Int32>  area   (Exterior)      := area(result, Int32); // DEBUG
+			// attribute<Int32>  area   (Exterior)      := area(result, Int32); // DEBUG
 		}
-
-		Template ProcessGmlPolygonImpl
+ */
+/* 		Template ProcessGmlPolygonImpl
 		{
 			// begin case parameters
 			unit<uint32> gmlPolygon;
@@ -408,8 +409,8 @@ container BGT_Tools
 				gmlPolygon/gml_Interior/Parent_rel
 			);
 		}
-
-		Template ProcessGmlPolygon
+ */
+/* 		Template ProcessGmlPolygon
 		{
 			// begin case parameters
 			unit<uint32>    gmlContext;
@@ -423,9 +424,9 @@ container BGT_Tools
 				: 'Templates/one2one_union(impl/gmlPolygon/gml_exterior, gmlContext, impl/Polygon/result, impl/gmlPolygon/gml_exterior/Parent_rel)';
 
 			container geometry := = geometry_expr;
-			attribute<rdc_mm> result (gmlContext, polygon) := geometry/result;
+			attribute<rdc_meter> result (gmlContext, polygon) := geometry/result;
 		}
-	}
+ */	}
 	
 	
 	container ConfigSettings
