@@ -4,8 +4,8 @@ container BGT_Tools
 	// select citygml without plaatsbepalingspunten
 	// extract zip to %SourceDataDir%/BGT/$Date$
 	
-	parameter<string> BGT_Date     := '20250305';
-	parameter<string> BGT_gml_path := 'D:/SourceData/BGT/'+BGT_Date; 
+	parameter<string> BGT_Date     := '20240124';
+	parameter<string> BGT_gml_path := 'E:/SourceData/BGT/bgt-'+BGT_Date; 
 	parameter<string> Export_path  := '%SourceDataDir%/RSOpen/Grondgebruik/BGT';
 
 	// parameter<uint32> srsDimensionDefaultValue := 2;
