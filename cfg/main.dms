@@ -4,7 +4,7 @@ container BGT_Tools
 	// select citygml without plaatsbepalingspunten
 	// extract zip to %SourceDataDir%/BGT/$Date$
 	
-	parameter<string> BGT_Date     := '20240124';
+	parameter<string> BGT_Date     := '20251117';
 	parameter<string> BGT_gml_path := 'E:/SourceData/BGT/bgt-'+BGT_Date; 
 	parameter<string> Export_path  := '%SourceDataDir%/RSOpen/Grondgebruik/BGT';
 
@@ -219,10 +219,10 @@ container BGT_Tools
 		}
 	}
  
-	unit<uint32> Write_FSS := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
-	, StorageName = "='%SourceDataDir%/RSOpen/Grondgebruik/BGT/'+bgt_date+'.fss'"
-	// unit<uint32> Write_MMD := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
-	// , StorageName = "=Export_path+'/'+bgt_date+'.mmd'"
+	// unit<uint32> Write_FSS := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
+	// , StorageName = "='%SourceDataDir%/RSOpen/Grondgebruik/BGT/'+bgt_date+'.fss'"
+	unit<uint32> Write_MMD := ='union_unit('+AsList('Read_GMLs/'+BGT_names/name+'/Actueel',',')+')'
+	, StorageName = "=Export_path+'/'+bgt_date+'.mmd'"
 	, using = "geography;units;Classifications"
 	{
 		attribute<rdc_meter> geometry (poly) := ='union_data(.,'+AsList('Read_GMLs/'+BGT_names/name+'/Actueel/geometry_simpl',',')+')';
@@ -231,10 +231,10 @@ container BGT_Tools
 		attribute<string>    bron_bestand    := ='union_data(.,'+AsList('const('+quote(BGT_names/name)+', Read_GMLs/'+BGT_names/name+'/Actueel)',',')+')';
 	}
 	
-	unit<uint32> Read_FSS 
-	: StorageName     = "=PropValue(Write_FSS, 'StorageName')"
-	// unit<uint32> Read_MMD 
-	// : StorageName     = "=PropValue(Write_MMD, 'StorageName')"
+	// unit<uint32> Read_FSS 
+	// : StorageName     = "=PropValue(Write_FSS, 'StorageName')"
+	unit<uint32> Read_MMD 
+	: StorageName     = "=PropValue(Write_MMD, 'StorageName')"
 	, StorageReadOnly = "true"
 	, using           = "geography;units;Classifications"
 	{
