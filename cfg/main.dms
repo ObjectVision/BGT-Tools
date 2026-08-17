@@ -27,7 +27,7 @@ container BGT_Tools
 		#include<ngr_layer.dms> // reference WMS layer
 	}
 
-	unit<uint8> BGT_names : nrofrows = 17 //17
+	unit<uint8> BGT_names : nrofrows = 16 //17
 	{
 		unit<uint8> Elements := range(uint8, 0b, nrAttr * #.[uint8])
 		{
@@ -42,7 +42,7 @@ container BGT_Tools
 				,'ongeclassificeerdobject' , '700'   , 'plus_status'                 , 'bgt_status'  //er is niks beters
 				,'overbruggingsdeel'       , '800'   , 'hoortBijTypeOverbrugging'    , 'class'       //checked
 				,'overigbouwwerk'          , '900'   , 'bgt_type'                    , 'plus_type'
-				,'pand'                    , '1000'  , 'plus_status'                 , 'plus_status'
+				// ,'pand'                    , '1000'  , 'plus_status'                 , 'plus_status' //die status velden hebben geen info, dus hier heb je niks aan...
 				,'vegetatieobject'         , '1100'  , 'plus_type'                   , 'plus_type'            //checked
 				,'tunneldeel'              , '1200'  , 'plus_status'                 , 'plus_status'            //er is niks beters
 				,'waterdeel'               , '1300'  , 'class'                       , 'class'
